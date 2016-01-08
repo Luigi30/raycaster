@@ -102,6 +102,8 @@ namespace Raycaster
             double Xa = 64 / Math.Tan((double)rayAngleRadians);
             double Ya = GRID_WIDTH;
 
+            //math goes here
+
             return -1.0M;
 
         }
