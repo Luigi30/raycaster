@@ -38,11 +38,14 @@ namespace Raycaster
 
             var GameMap = new GameTileMap(MAP_WIDTH, MAP_HEIGHT);
             GameMap.TileMap[1][0].WallHere = 1; //a blank map with a wall at (1,0)
+            GameMap.TileMap[2][0].WallHere = 1; //a blank map with a wall at (1,0)
+            GameMap.TileMap[3][0].WallHere = 1; //a blank map with a wall at (1,0)
+            GameMap.TileMap[4][0].WallHere = 1; //a blank map with a wall at (1,0)
 
             var PlayerActor = new Player();
-            PlayerActor.X = 0.0M;
-            PlayerActor.Y = 32.0M;
-            PlayerActor.rotation = 0.0M;
+            PlayerActor.X = 96.0M;
+            PlayerActor.Y = 224.0M;
+            PlayerActor.rotation = 60.0M;
 
             InitializeComponent();
             DataContext = mwVm;
@@ -57,11 +60,14 @@ namespace Raycaster
             }
 
             Decimal increment = (Decimal)FOV_DEGREES / (Decimal)COLUMN_COUNT; //one column covers (90/320) degrees
-
+            Decimal startingAngle = PlayerActor.rotation - (increment * COLUMN_COUNT) / 2;
+            int columnIndex = 0;
             //Draw a column on the screen. 
             for (int i = -COLUMN_COUNT / 2; i < (COLUMN_COUNT / 2) - 1; i++)
             {
-                Decimal angle = (PlayerActor.rotation + i) * increment; //sweeping from rotation-45 to rotation+45
+                columnIndex = i + (COLUMN_COUNT / 2);
+
+                Decimal angle = startingAngle + increment * columnIndex; //sweeping from rotation-45 to rotation+45
                 if(angle < 0)
                 {
                     angle += 360;
@@ -75,13 +81,12 @@ namespace Raycaster
 
                 if (distance == -1)
                 {
-                    WallHeights[i + (COLUMN_COUNT / 2)] = 0;
+                    WallHeights[columnIndex] = 0;
                 }
                 else
                 {
-                    WallHeights[i + (COLUMN_COUNT / 2)] = WALL_HEIGHT / (distance / GRID_WIDTH); //WALL_HEIGHT units tall when GRID_WIDTH units away
+                    WallHeights[columnIndex] = WALL_HEIGHT / (distance / GRID_WIDTH); //WALL_HEIGHT units tall when GRID_WIDTH units away
                 }
-
             }
 
             //Draw the actual column on the screen bitmap.
@@ -109,12 +114,24 @@ namespace Raycaster
             //rayAngle is in degrees
             Decimal rayAngleRadians = rayAngle * (decimal)(Math.PI / 180); //forward angle
 
+            bool RAY_FACES_UP = (rayAngle - 180) <= 0;
+
             double Xa = 64 / Math.Tan((double)rayAngleRadians);
             double Ya = GRID_WIDTH;
 
-            //math goes here
+            double Ay;
 
-            return -1.0M;
+            //math goes here
+            if (RAY_FACES_UP)
+            {
+                Ay= (double)Math.Floor(player.Y / 64) * 64 - 1;
+            }
+            else
+            {
+                Ay = (double)Math.Floor(player.Y / 64) * 64 + 64;
+            }
+
+            return 64.0M;
 
         }
     }
