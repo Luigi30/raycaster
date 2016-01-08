@@ -45,7 +45,7 @@ namespace Raycaster
             var PlayerActor = new Player();
             PlayerActor.X = 96.0M;
             PlayerActor.Y = 224.0M;
-            PlayerActor.rotation = 0.0M;
+            PlayerActor.rotation = 180.0M;
 
             InitializeComponent();
             DataContext = mwVm;
@@ -112,13 +112,22 @@ namespace Raycaster
             Decimal rayX = player.X;
             Decimal rayY = player.Y;
             //rayAngle is in degrees
-            Decimal rayAngleRadians = rayAngle * (decimal)(Math.PI / 180); //forward angle
+            Decimal rayAngleRadians = (rayAngle * (decimal)(Math.PI / 180)); //forward angle
             Decimal betaRadians = beta * (decimal)(Math.PI / 180);
 
             bool RAY_FACES_UP = (rayAngle - 180) <= 0;
 
-            double Xa = 64 / Math.Tan((double)rayAngleRadians);
-            double Ya = GRID_WIDTH;
+            double Xa, Ya;
+            if(rayAngleRadians > 0)
+            {
+                Xa = 64 / Math.Tan((double)rayAngleRadians);
+            }
+            else
+            {
+                Xa = 0;
+            }
+
+            Ya = GRID_WIDTH;
 
             double Ax, Ay;
             double wallInterceptX, wallInterceptY = 0;
@@ -126,14 +135,21 @@ namespace Raycaster
             //Horizontal interception
             if (RAY_FACES_UP)
             {
-                Ay= (double)Math.Floor(player.Y / 64) * 64 - 1;
+                Ay = (double)Math.Floor(player.Y / 64) * 64 - 1;
             }
             else
             {
                 Ay = (double)Math.Floor(player.Y / 64) * 64 + 64;
             }
 
-            Ax = (double)player.X + ((double)player.Y - Ay) / Math.Tan((double)rayAngleRadians);
+            if(rayAngleRadians > 0)
+            {
+                Ax = (double)player.X + ((double)player.Y - Ay) / Math.Tan((double)rayAngleRadians);
+            } else
+            {
+                Ax = 0;
+            }
+
             wallInterceptX = Ax;
             wallInterceptY = Ay;
 
@@ -147,7 +163,6 @@ namespace Raycaster
             }
 
             bool foundWall = map.TileMap[gridX][gridY].WallHere == 1;
-            bool goneTooFar = false;
             int tooFarCount = 0;
 
             while (!foundWall || tooFarCount > 10)
@@ -167,7 +182,7 @@ namespace Raycaster
                 gridX = Convert.ToInt16(wallInterceptX / 64) - 1;
                 gridY = Convert.ToInt16(wallInterceptY / 64) - 1;
 
-                if (gridX < 0 || gridY < 0 || gridX > MAP_WIDTH - 1 || gridY > MAP_HEIGHT - 1 || goneTooFar)
+                if (gridX < 0 || gridY < 0 || gridX > MAP_WIDTH - 1 || gridY > MAP_HEIGHT - 1)
                 {
                     return -1.0M;
                 }
