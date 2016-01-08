@@ -38,14 +38,14 @@ namespace Raycaster
 
             var GameMap = new GameTileMap(MAP_WIDTH, MAP_HEIGHT);
             GameMap.TileMap[1][0].WallHere = 1; //a blank map with a wall at (1,0)
-            GameMap.TileMap[2][0].WallHere = 1; //a blank map with a wall at (1,0)
-            GameMap.TileMap[3][0].WallHere = 1; //a blank map with a wall at (1,0)
-            GameMap.TileMap[4][0].WallHere = 1; //a blank map with a wall at (1,0)
+            GameMap.TileMap[2][0].WallHere = 1; //a blank map with a wall at (2,0)
+            GameMap.TileMap[3][0].WallHere = 1; //a blank map with a wall at (3,0)
+            GameMap.TileMap[4][0].WallHere = 1; //a blank map with a wall at (4,0)
 
             var PlayerActor = new Player();
             PlayerActor.X = 96.0M;
             PlayerActor.Y = 224.0M;
-            PlayerActor.rotation = 60.0M;
+            PlayerActor.rotation = 0.0M;
 
             InitializeComponent();
             DataContext = mwVm;
@@ -77,7 +77,7 @@ namespace Raycaster
                     angle -= 360;
                 }
 
-                var distance = CastRay(PlayerActor, GameMap, angle, PlayerActor.rotation + angle);
+                var distance = CastRay(PlayerActor, GameMap, angle, PlayerActor.rotation - angle);
 
                 if (distance == -1)
                 {
@@ -113,6 +113,7 @@ namespace Raycaster
             Decimal rayY = player.Y;
             //rayAngle is in degrees
             Decimal rayAngleRadians = rayAngle * (decimal)(Math.PI / 180); //forward angle
+            Decimal betaRadians = beta * (decimal)(Math.PI / 180);
 
             bool RAY_FACES_UP = (rayAngle - 180) <= 0;
 
@@ -136,8 +137,9 @@ namespace Raycaster
             wallInterceptX = Ax;
             wallInterceptY = Ay;
 
-            int gridX = Convert.ToInt16(Ax / 64) - 1;
-            int gridY = Convert.ToInt16(Ay / 64) - 1;
+            int gridX, gridY;
+            gridX = Convert.ToInt16(Ax / 64) - 1;
+            gridY = Convert.ToInt16(Ay / 64) - 1;
 
             if (gridX < 0 || gridY < 0 || gridX > MAP_WIDTH - 1 || gridY > MAP_HEIGHT - 1)
             {
@@ -176,7 +178,9 @@ namespace Raycaster
 
             if (foundWall)
             {
-                return Convert.ToDecimal(Math.Sqrt(Math.Pow((double)player.X - wallInterceptX, 2) + Math.Pow((double)player.Y - wallInterceptY, 2)));
+                var distortedDistance = Convert.ToDecimal(Math.Sqrt(Math.Pow((double)player.X - wallInterceptX, 2) + Math.Pow((double)player.Y - wallInterceptY, 2)));
+                var correctedDistance = Convert.ToDecimal(Math.Cos((double)betaRadians)) * distortedDistance;
+                return correctedDistance;
             }
 
             return -1.0M;
