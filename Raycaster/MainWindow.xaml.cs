@@ -139,6 +139,11 @@ namespace Raycaster
             int gridX = Convert.ToInt16(Ax / 64) - 1;
             int gridY = Convert.ToInt16(Ay / 64) - 1;
 
+            if (gridX < 0 || gridY < 0 || gridX > MAP_WIDTH - 1 || gridY > MAP_HEIGHT - 1)
+            {
+                return -1.0M;
+            }
+
             bool foundWall = map.TileMap[gridX][gridY].WallHere == 1;
             bool goneTooFar = false;
             int tooFarCount = 0;
@@ -160,11 +165,7 @@ namespace Raycaster
                 gridX = Convert.ToInt16(wallInterceptX / 64) - 1;
                 gridY = Convert.ToInt16(wallInterceptY / 64) - 1;
 
-                if(gridX < 0 || gridY < 0)
-                {
-                    return -1.0M;
-                }
-                if(gridX > MAP_WIDTH-1 || gridY > MAP_HEIGHT-1)
+                if (gridX < 0 || gridY < 0 || gridX > MAP_WIDTH - 1 || gridY > MAP_HEIGHT - 1 || goneTooFar)
                 {
                     return -1.0M;
                 }
