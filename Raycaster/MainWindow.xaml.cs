@@ -37,7 +37,7 @@ namespace Raycaster
             mwVm.ImageBuffer = new WriteableBitmap(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, 96, 96, PixelFormats.Bgra32, null);
 
             var GameMap = new GameTileMap(MAP_WIDTH, MAP_HEIGHT);
-            GameMap.TileMap[1][0].WallHere = 1;
+            GameMap.TileMap[1][0].WallHere = 1; //a blank map with a wall at (1,0)
 
             var PlayerActor = new Player();
             PlayerActor.X = 0.0M;
@@ -49,32 +49,42 @@ namespace Raycaster
 
             mwVm.ImageBuffer.Clear(Colors.Black);
 
+            //initialize the column height map
             List<Decimal> WallHeights = new List<Decimal>();
             for (int i = 0; i < COLUMN_COUNT; i++)
             {
                 WallHeights.Add(0);
             }
 
-            for(int i = -COLUMN_COUNT / 2; i < (COLUMN_COUNT / 2) - 1; i++)
+            Decimal increment = (Decimal)FOV_DEGREES / (Decimal)COLUMN_COUNT; //one column covers (90/320) degrees
+
+            //Draw a column on the screen. 
+            for (int i = -COLUMN_COUNT / 2; i < (COLUMN_COUNT / 2) - 1; i++)
             {
-                Decimal increment = (Decimal)FOV_DEGREES / (Decimal)COLUMN_COUNT;
-                Decimal angle = i * increment;
+                Decimal angle = (PlayerActor.rotation + i) * increment; //sweeping from rotation-45 to rotation+45
                 if(angle < 0)
                 {
                     angle += 360;
                 }
+                else if(angle > 360)
+                {
+                    angle -= 360;
+                }
 
                 var distance = CastRay(PlayerActor, GameMap, angle, PlayerActor.rotation + angle);
+
                 if (distance == -1)
                 {
                     WallHeights[i + (COLUMN_COUNT / 2)] = 0;
-                } else
+                }
+                else
                 {
-                    WallHeights[i + (COLUMN_COUNT / 2)] = WALL_HEIGHT / distance;
+                    WallHeights[i + (COLUMN_COUNT / 2)] = WALL_HEIGHT / (distance / GRID_WIDTH); //WALL_HEIGHT units tall when GRID_WIDTH units away
                 }
 
             }
 
+            //Draw the actual column on the screen bitmap.
             for (int i = 0; i < COLUMN_COUNT; i++)
             {
                 if (WallHeights[i] > 0)
