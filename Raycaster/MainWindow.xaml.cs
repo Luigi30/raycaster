@@ -119,9 +119,10 @@ namespace Raycaster
             double Xa = 64 / Math.Tan((double)rayAngleRadians);
             double Ya = GRID_WIDTH;
 
-            double Ay;
+            double Ax, Ay;
+            double wallInterceptX, wallInterceptY = 0;
 
-            //math goes here
+            //Horizontal interception
             if (RAY_FACES_UP)
             {
                 Ay= (double)Math.Floor(player.Y / 64) * 64 - 1;
@@ -131,7 +132,53 @@ namespace Raycaster
                 Ay = (double)Math.Floor(player.Y / 64) * 64 + 64;
             }
 
-            return 64.0M;
+            Ax = (double)player.X + ((double)player.Y - Ay) / Math.Tan((double)rayAngleRadians);
+            wallInterceptX = Ax;
+            wallInterceptY = Ay;
+
+            int gridX = Convert.ToInt16(Ax / 64) - 1;
+            int gridY = Convert.ToInt16(Ay / 64) - 1;
+
+            bool foundWall = map.TileMap[gridX][gridY].WallHere == 1;
+            bool goneTooFar = false;
+            int tooFarCount = 0;
+
+            while (!foundWall || tooFarCount > 10)
+            {
+                if (RAY_FACES_UP)
+                {
+                    Ya -= 64;
+                }
+                else
+                {
+                    Ya += 64;
+                }
+                Xa = 64 / Math.Tan((double)rayAngleRadians);
+
+                wallInterceptX = Ax + Xa;
+                wallInterceptY = Ay + Ya;
+                gridX = Convert.ToInt16(wallInterceptX / 64) - 1;
+                gridY = Convert.ToInt16(wallInterceptY / 64) - 1;
+
+                if(gridX < 0 || gridY < 0)
+                {
+                    return -1.0M;
+                }
+                if(gridX > MAP_WIDTH-1 || gridY > MAP_HEIGHT-1)
+                {
+                    return -1.0M;
+                }
+
+                foundWall = map.TileMap[gridX][gridY].WallHere == 1;
+                tooFarCount++;
+            }
+
+            if (foundWall)
+            {
+                return Convert.ToDecimal(Math.Sqrt(Math.Pow((double)player.X - wallInterceptX, 2) + Math.Pow((double)player.Y - wallInterceptY, 2)));
+            }
+
+            return -1.0M;
 
         }
     }
